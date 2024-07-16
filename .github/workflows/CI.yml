@@ -2,9 +2,9 @@ name: CI
 
 on:
   push:
-    branches: [ master, gsc-master ]
+    branches: [ main ]
   pull_request:
-    branches: [ master, gsc-master ]
+    branches: [ main ]
 
 jobs:
   build:
