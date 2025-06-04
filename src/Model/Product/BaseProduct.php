@@ -98,6 +98,11 @@ abstract class BaseProduct implements JsonSerializable
      */
     protected $images;
 
+    /**
+     * @var VariationAttributes|null
+     */
+    protected $variationAttributes;
+
     abstract public function __construct();
 
     /**
@@ -141,7 +146,7 @@ abstract class BaseProduct implements JsonSerializable
         return $this->parentSku;
     }
 
-    public function getName(): string
+    public function getName(): ?string
     {
         return $this->name;
     }
@@ -161,7 +166,7 @@ abstract class BaseProduct implements JsonSerializable
         return $this->categories;
     }
 
-    public function getDescription(): string
+    public function getDescription(): ?string
     {
         return $this->description;
     }
@@ -203,6 +208,11 @@ abstract class BaseProduct implements JsonSerializable
         }
 
         return $this->url;
+    }
+
+    public function getVariationAttributes(): ?VariationAttributes
+    {
+        return $this->variationAttributes;
     }
 
     public function setSellerSku(string $sellerSku): void
@@ -288,6 +298,11 @@ abstract class BaseProduct implements JsonSerializable
     public function attachImages(Images $images): void
     {
         $this->images = $images;
+    }
+
+    public function setVariationAttributes(VariationAttributes $variationAttributes): void
+    {
+        $this->variationAttributes = $variationAttributes;
     }
 
     public function jsonSerialize(): stdClass

@@ -35,6 +35,12 @@ class OrderFactory
         'ItemsCount',
         'ExtraAttributes',
         'Statuses',
+        'GrandTotal',
+        'ProductTotal',
+        'TaxAmount',
+        'ShippingFeeTotal',
+        'ShippingTax',
+        'Voucher',
     ];
 
     public static function make(SimpleXMLElement $element): Order
@@ -73,6 +79,18 @@ class OrderFactory
 
         $orderNumber = is_numeric((string) $element->OrderNumber) ? (int) $element->OrderNumber : (string) $element->OrderNumber;
 
+        $shippingType = isset($element->ShippingType) ? (string) $element->ShippingType : null;
+        $businessInvoiceRequired = !empty($element->BusinessInvoiceRequired)
+            ? ($element->BusinessInvoiceRequired == 'true')
+            : (
+                !empty($element->InvoiceRequired)
+                ? ($element->InvoiceRequired == 'true')
+                : null
+            );
+
+        $extraBillingAttributes = !empty($element->ExtraBillingAttributes) ?
+            ExtraBillingAttributesFactory::make($element->ExtraBillingAttributes) : null;
+
         return Order::fromData(
             (int) $element->OrderId,
             $orderNumber,
@@ -95,7 +113,21 @@ class OrderFactory
             $promisedShippingTime,
             (string) $element->ExtraAttributes,
             $statuses,
-            $operatorCode
+            $businessInvoiceRequired,
+            $shippingType,
+            $operatorCode,
+            $extraBillingAttributes,
+            self::stringToFloat((string) $element->GrandTotal),
+            self::stringToFloat((string) $element->ProductTotal),
+            self::stringToFloat((string) $element->TaxAmount),
+            self::stringToFloat((string) $element->ShippingFeeTotal),
+            self::stringToFloat((string) $element->ShippingTax),
+            self::stringToFloat((string) $element->Voucher)
         );
+    }
+
+    public static function stringToFloat(string $value): float
+    {
+        return (float) str_replace(',', '', $value);
     }
 }

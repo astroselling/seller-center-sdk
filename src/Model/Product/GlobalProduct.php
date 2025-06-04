@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Linio\SellerCenter\Model\Product;
 
 use JsonSerializable;
+use Linio\SellerCenter\Exception\EmptyArgumentException;
 use Linio\SellerCenter\Model\Brand\Brand;
 use Linio\SellerCenter\Model\Category\Categories;
 use Linio\SellerCenter\Model\Category\Category;
@@ -44,10 +45,16 @@ class GlobalProduct extends BaseProduct implements JsonSerializable, ProductInte
      */
     protected $talla;
 
+    /**
+     * @var int|null
+     */
+    protected $contentScore;
+
     public function __construct()
     {
         $this->productData = new ProductData();
         $this->images = new Images();
+        $this->variationAttributes = new VariationAttributes();
     }
 
     /**
@@ -61,14 +68,53 @@ class GlobalProduct extends BaseProduct implements JsonSerializable, ProductInte
         string $description,
         Brand $brand,
         BusinessUnits $businessUnits,
-        string $productId,
+        ?string $productId,
         ?string $taxClass,
         ProductData $productData,
         ?Images $images = null,
-        ?string $qcStatus = null
+        ?string $qcStatus = null,
+        ?int $contentScore = null,
+        ?VariationAttributes $variationAttributes = null
     ): self {
         self::ValidateArguments($sellerSku, $name, $description);
 
+        return self::fromMainData(
+            $sellerSku,
+            $name,
+            $variation,
+            $primaryCategory,
+            $description,
+            $brand,
+            $businessUnits,
+            $productId,
+            $taxClass,
+            $productData,
+            $images,
+            $qcStatus,
+            $contentScore,
+            $variationAttributes
+        );
+    }
+
+    /**
+     * @return static
+     */
+    public static function fromMainData(
+        string $sellerSku,
+        string $name,
+        ?string $variation,
+        Category $primaryCategory,
+        string $description,
+        Brand $brand,
+        BusinessUnits $businessUnits,
+        ?string $productId,
+        ?string $taxClass,
+        ProductData $productData,
+        ?Images $images = null,
+        ?string $qcStatus = null,
+        ?int $contentScore = null,
+        ?VariationAttributes $variationAtributes = null
+    ): self {
         $product = new static();
 
         $product->setSellerSku($sellerSku);
@@ -77,8 +123,6 @@ class GlobalProduct extends BaseProduct implements JsonSerializable, ProductInte
         $product->setDescription($description);
         $product->setBrand($brand);
         $product->setBusinessUnits($businessUnits);
-        $product->setProductId($productId);
-        $product->setTaxClass($taxClass);
         $product->setProductData($productData);
 
         $categories = new Categories();
@@ -88,12 +132,101 @@ class GlobalProduct extends BaseProduct implements JsonSerializable, ProductInte
             $product->setVariation($variation);
         }
 
+        if (!empty($productId)) {
+            $product->setProductId($productId);
+        }
+
+        if (!empty($taxClass)) {
+            $product->setTaxClass($taxClass);
+        }
+
         if (!empty($images)) {
             $product->attachImages($images);
         }
 
         if (!empty($qcStatus)) {
             $product->setQcStatus($qcStatus);
+        }
+
+        if (!empty($contentScore)) {
+            $product->setContentScore($contentScore);
+        }
+
+        if (!empty($variationAtributes)) {
+            $product->setVariationAttributes($variationAtributes);
+        }
+
+        return $product;
+    }
+
+    /**
+     * @return static
+     */
+    public static function fromBasicDataWithNullableParams(
+        string $sellerSku,
+        ?string $name,
+        ?string $variation,
+        Category $primaryCategory,
+        ?string $description,
+        Brand $brand,
+        BusinessUnits $businessUnits,
+        ?string $productId,
+        ?string $taxClass,
+        ProductData $productData,
+        ?Images $images = null,
+        ?string $qcStatus = null,
+        ?int $contentScore = null,
+        ?VariationAttributes $variationAttributes = null
+    ): self {
+        if (empty($sellerSku)) {
+            throw new EmptyArgumentException('SellerSku');
+        }
+
+        $product = new static();
+
+        $product->setSellerSku($sellerSku);
+        $product->setPrimaryCategory($primaryCategory);
+        $product->setBrand($brand);
+        $product->setBusinessUnits($businessUnits);
+        $product->setProductData($productData);
+
+        $categories = new Categories();
+        $product->setCategories($categories);
+
+        if (!empty($variation)) {
+            $product->setVariation($variation);
+        }
+
+        if (!empty($productId)) {
+            $product->setProductId($productId);
+        }
+
+        if (!empty($taxClass)) {
+            $product->setTaxClass($taxClass);
+        }
+
+        if (!empty($images)) {
+            $product->attachImages($images);
+        }
+
+        if (!empty($qcStatus)) {
+            $product->setQcStatus($qcStatus);
+        }
+
+        if (!empty($contentScore)) {
+            $product->setContentScore($contentScore);
+        }
+
+        if (!empty($name)) {
+            $product->setName($name);
+        }
+
+        if (!empty($description)) {
+            $product->setDescription($description);
+        }
+
+        if (!empty($variationAttributes)) {
+            $product->setVariationAttributes($variationAttributes);
         }
 
         return $product;
@@ -133,6 +266,11 @@ class GlobalProduct extends BaseProduct implements JsonSerializable, ProductInte
         return $this->talla;
     }
 
+    public function getContentScore(): ?int
+    {
+        return $this->contentScore;
+    }
+
     public function setQcStatus(string $qcStatus): void
     {
         $this->qcStatus = $qcStatus;
@@ -161,6 +299,11 @@ class GlobalProduct extends BaseProduct implements JsonSerializable, ProductInte
     public function setTalla(string $talla): void
     {
         $this->talla = $talla;
+    }
+
+    public function setContentScore(int $contentScore): void
+    {
+        $this->contentScore = $contentScore;
     }
 
     /**
@@ -197,6 +340,7 @@ class GlobalProduct extends BaseProduct implements JsonSerializable, ProductInte
         $serialized->colorBasico = $this->colorBasico;
         $serialized->size = $this->size;
         $serialized->talla = $this->talla;
+        $serialized->variationAttributes = $this->variationAttributes;
 
         return $serialized;
     }

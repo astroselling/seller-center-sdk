@@ -18,6 +18,7 @@ use Linio\SellerCenter\Model\Product\GlobalProduct;
 use Linio\SellerCenter\Model\Product\Image;
 use Linio\SellerCenter\Model\Product\Images;
 use Linio\SellerCenter\Model\Product\ProductData;
+use Linio\SellerCenter\Model\Product\VariationAttributes;
 use SimpleXMLElement;
 
 class GlobalProductTest extends LinioTestCase
@@ -57,6 +58,8 @@ class GlobalProductTest extends LinioTestCase
     protected $mainImage;
     protected $images;
 
+    protected $contentScore = 40;
+
     protected $conditionType = 'Nuevo';
     protected $packageHeight = 3;
     protected $packageWidth = 0;
@@ -65,6 +68,7 @@ class GlobalProductTest extends LinioTestCase
 
     protected $product;
     protected $faker;
+    protected $variationAttributes;
 
     public function setUp(): void
     {
@@ -83,6 +87,12 @@ class GlobalProductTest extends LinioTestCase
             $this->packageLength,
             $this->packageWeight
         );
+
+        $this->variationAttributes = new VariationAttributes([
+            'color' => $this->color,
+            'colorBasico' => $this->colorBasico,
+            'talla' => $this->talla,
+        ]);
 
         $this->businessUnits = new BusinessUnits();
         $businessUnit = new BusinessUnit(
@@ -121,10 +131,12 @@ class GlobalProductTest extends LinioTestCase
             $this->description,
             $this->brand,
             $this->businessUnits,
-            $this->productId,
-            $this->taxClass,
+            null,
+            null,
             $this->productData,
-            $this->images
+            $this->images,
+            null,
+            $this->contentScore
         );
 
         $this->assertInstanceOf(GlobalProduct::class, $product);
@@ -134,10 +146,45 @@ class GlobalProductTest extends LinioTestCase
         $this->assertEquals($product->getPrimaryCategory(), $this->primaryCategory);
         $this->assertEquals($product->getDescription(), $this->description);
         $this->assertEquals($product->getBrand(), $this->brand);
-        $this->assertEquals($product->getProductId(), $this->productId);
-        $this->assertEquals($product->getTaxClass(), $this->taxClass);
+        $this->assertEquals($product->getProductId(), null);
+        $this->assertEquals($product->getTaxClass(), null);
         $this->assertEquals($product->getProductData(), $this->productData);
         $this->assertEquals($product->getQcStatus(), null);
+        $this->assertEquals($product->getContentScore(), $this->contentScore);
+        $this->assertInstanceOf(Images::class, $product->getImages());
+        $this->assertInstanceOf(BusinessUnits::class, $product->getBusinessUnits());
+    }
+
+    public function testItUpdatedsAGlobalProductWithNullablesParameters(): void
+    {
+        $product = GlobalProduct::fromBasicDataWithNullableParams(
+            $this->sellerSku,
+            null,
+            $this->variation,
+            $this->primaryCategory,
+            null,
+            $this->brand,
+            $this->businessUnits,
+            null,
+            null,
+            $this->productData,
+            $this->images,
+            null,
+            $this->contentScore
+        );
+
+        $this->assertInstanceOf(GlobalProduct::class, $product);
+        $this->assertEquals($product->getSellerSku(), $this->sellerSku);
+        $this->assertEquals($product->getName(), null);
+        $this->assertEquals($product->getVariation(), $this->variation);
+        $this->assertEquals($product->getPrimaryCategory(), $this->primaryCategory);
+        $this->assertEquals($product->getDescription(), null);
+        $this->assertEquals($product->getBrand(), $this->brand);
+        $this->assertEquals($product->getProductId(), null);
+        $this->assertEquals($product->getTaxClass(), null);
+        $this->assertEquals($product->getProductData(), $this->productData);
+        $this->assertEquals($product->getQcStatus(), null);
+        $this->assertEquals($product->getContentScore(), $this->contentScore);
         $this->assertInstanceOf(Images::class, $product->getImages());
         $this->assertInstanceOf(BusinessUnits::class, $product->getBusinessUnits());
     }
@@ -259,7 +306,11 @@ class GlobalProductTest extends LinioTestCase
             $this->businessUnits,
             $this->productId,
             $this->taxClass,
-            $this->productData
+            $this->productData,
+            null,
+            null,
+            null,
+            $this->variationAttributes
         );
 
         $product->setShopSku($this->shopSku);
@@ -281,6 +332,9 @@ class GlobalProductTest extends LinioTestCase
         $expectedJson['images'][0]['url'] = $this->images->all()[0]->getUrl();
         $expectedJson['images'][1]['url'] = $this->images->all()[1]->getUrl();
         $expectedJson['images'][2]['url'] = $this->images->all()[2]->getUrl();
+        $expectedJson['variationAttributes']['Color'] = $this->variationAttributes->getVariationAttribute('Color');
+        $expectedJson['variationAttributes']['ColorBasico'] = $this->variationAttributes->getVariationAttribute('ColorBasico');
+        $expectedJson['variationAttributes']['Talla'] = $this->variationAttributes->getVariationAttribute('Talla');
 
         $this->assertJsonStringEqualsJsonString(Json::encode($expectedJson), Json::encode($product));
     }
@@ -334,9 +388,6 @@ class GlobalProductTest extends LinioTestCase
             ['SellerSku'],
             ['Name'],
             ['Brand'],
-            ['Description'],
-            ['TaxClass'],
-            ['ProductId'],
             ['PrimaryCategory'],
             ['ProductData'],
             ['BusinessUnit'],

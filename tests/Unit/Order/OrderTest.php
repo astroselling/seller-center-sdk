@@ -44,13 +44,33 @@ class OrderTest extends LinioTestCase
     protected $city = 'city';
     protected $postCode = '10117';
     protected $country = 'country';
-
+    protected $legalId = '77656276-9';
+    protected $fiscalPerson = 'business';
+    protected $documentType = 'RUT';
+    protected $receiverRegion = 'METROPOLITANA DE SANTIAGO';
+    protected $receiverAddress = 'JOSE MANUEL INFANTE 1155, 902 PROVIDENCIA';
+    protected $receiverPostcode = '97873';
+    protected $receiverLegalName = 'COMERCIALIZADORA VIPAZ SPA';
+    protected $receiverMunicipality = 'PROVIDENCIA';
+    protected $receiverTypeRegimen = '475201 - VENTA AL POR MENOR DE ARTÍCULOS DE FERRETERÍA Y MATERIALES DE CONSTRUCCIÓN';
+    protected $customerVerifierDigit = '9';
+    protected $receiverLocality = 'PROVIDENCIA';
+    protected $receiverEmail = 'comercializadora.vipaz@gmail.com';
+    protected $receiverPhonenumber = '+56999100109';
     protected $nationalRegistrationNumber = '72201776';
     protected $itemsCount = 1;
     protected $promisedShippingTime = '2018-07-18 23:59:59';
     protected $statuses = ['pending', 'canceled'];
     protected $extraAttributes = 'Extra attributes';
     protected $operatorCode = 'facl';
+    protected $shippingType = 'Dropshipping';
+    protected $businessInvoiceRequired = true;
+    protected $grandTotal = 95800;
+    protected $productTotal = 95800;
+    protected $taxAmount = 15295;
+    protected $shippingFeeTotal = 0;
+    protected $shippingTax = 0;
+    protected $voucher = 0;
 
     public function testItReturnsValidOrder(): Order
     {
@@ -82,6 +102,12 @@ class OrderTest extends LinioTestCase
         $this->assertEquals((string) $simpleXml->ExtraAttributes, $order->getExtraAttributes());
         $this->assertSame((string) $simpleXml->Statuses->Status[0], $order->getStatuses()[0]);
         $this->assertEquals((string) $simpleXml->OperatorCode, $order->getOperatorCode());
+        $this->assertEquals((string) $simpleXml->GrandTotal, $order->getGrandTotal());
+        $this->assertEquals((string) $simpleXml->ProductTotal, $order->getProductTotal());
+        $this->assertEquals((string) $simpleXml->TaxAmount, $order->getTaxAmount());
+        $this->assertEquals((string) $simpleXml->ShippingFeeTotal, $order->getShippingFeeTotal());
+        $this->assertEquals((string) $simpleXml->ShippingTax, $order->getShippingTax());
+        $this->assertEquals((string) $simpleXml->Voucher, $order->getVoucher());
 
         return $order;
     }
@@ -183,7 +209,15 @@ class OrderTest extends LinioTestCase
         $expectedJson['extraAttributes'] = $this->extraAttributes;
         $expectedJson['statuses'][0] = $this->statuses[0];
         $expectedJson['statuses'][1] = $this->statuses[1];
+        $expectedJson['businessInvoiceRequired'] = $this->businessInvoiceRequired;
+        $expectedJson['shippingType'] = $this->shippingType;
         $expectedJson['operatorCode'] = $this->operatorCode;
+        $expectedJson['grandTotal'] = $this->grandTotal;
+        $expectedJson['productTotal'] = $this->productTotal;
+        $expectedJson['taxAmount'] = $this->taxAmount;
+        $expectedJson['shippingFeeTotal'] = $this->shippingFeeTotal;
+        $expectedJson['shippingTax'] = $this->shippingTax;
+        $expectedJson['voucher'] = $this->voucher;
 
         $this->assertJsonStringEqualsJsonString(Json::encode($expectedJson), Json::encode($order));
     }
@@ -246,7 +280,13 @@ class OrderTest extends LinioTestCase
             $this->extraAttributes,
             $this->statuses[0],
             $this->statuses[1],
-            $this->operatorCode
+            $this->operatorCode,
+            $this->grandTotal,
+            $this->productTotal,
+            $this->taxAmount,
+            $this->shippingFeeTotal,
+            $this->shippingTax,
+            $this->voucher
         );
     }
 

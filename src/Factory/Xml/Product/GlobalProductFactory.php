@@ -20,10 +20,7 @@ class GlobalProductFactory
         'SellerSku',
         'Name',
         'PrimaryCategory',
-        'Description',
         'Brand',
-        'ProductId',
-        'TaxClass',
         'ProductData',
     ];
 
@@ -47,7 +44,7 @@ class GlobalProductFactory
             $images = ImagesFactory::make($element->Images);
         }
 
-        $product = GlobalProduct::fromBasicData(
+        $product = GlobalProduct::fromMainData(
             (string) $element->SellerSku,
             (string) $element->Name,
             (string) $element->Variation ?? null,
@@ -59,7 +56,8 @@ class GlobalProductFactory
             (string) $element->TaxClass,
             $productData,
             $images ?? null,
-            (string) $element->QCStatus ?? null
+            (string) $element->QCStatus ?? null,
+            (int) $element->ContentScore ?? null
         );
 
         if (!empty($element->ShopSku)) {
